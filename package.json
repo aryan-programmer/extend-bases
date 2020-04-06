@@ -2,7 +2,7 @@
   "name": "extend-bases",
   "version": "1.0.0",
   "description": "A simple library for multiple inheritance in JavaScript.",
-  "repository": "a",
+  "repository": "https://github.com/aryan-programmer/extend-bases",
   "author": "aryan.programer@gmail.com",
   "license": "MIT",
   "private": false,

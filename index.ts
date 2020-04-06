@@ -33,7 +33,7 @@ type UnionToIntersection<U> =
 	(U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
 /**
- * The type of an array containing the instances of specified constructors.
+ * Specifies that the array contains all the instances of specified constructors in order.
  */
 type InstancesArray<Ts extends Ctor[]> = {
 	[I in keyof Ts]: Ts[I] extends Ctor ? InstanceType<Ts[I]> : never;
@@ -47,7 +47,7 @@ type HasBasesArray<TBases extends Ctor[]> = {
 }
 
 /**
- * Specifies that the object is an intersection of all of the bases.
+ * Specifies that the object is an intersection of all of the bases, and has an array containing all of the base instances.
  */
 type HasBases<TBases extends Ctor[]> =
 	UnionToIntersection<AnyInstancesOf<TBases>> &
@@ -108,6 +108,7 @@ function setPrototypeToProxy<TBases extends Ctor[]> (
  * But, this library isolates the derived and base classes, ie prevents collision of their properties and methods.
  * Thus, this problem can be avoided by using the <code>defineProperties</code> method from this library, if you use the <code>bases</code> methods as well.
  * @param baseClasses The base classes to be inherited.
+ * @return A constructor taking in the *instances* of the base classes.
  *
  * @example
  * class Activatable {
@@ -263,7 +264,7 @@ function bases<TBases extends Ctor[]> (...baseClasses: TBases):
 
 /**
  * Defines the properties on the given object, the key represents the name of the property and the value as the, well, value.
- * Moreover, if the property name if prefixed with "readonly " then the property will be set to be readonly, ie non-writable.
+ * Moreover, if the property name if prefixed with `readonly` then the property will be set to be readonly, ie non-writable, ie any attempts to edit it in strict mode will fail with a `TypeError`.
  *
  * Use this function to set the properties of the objects inheriting from multiple base classes.
  *
@@ -277,7 +278,7 @@ function bases<TBases extends Ctor[]> (...baseClasses: TBases):
  *     "readonly <>": <value>, // Define a readonly property on `this` with the name <prop> and value <value>, readonly ie any attempts to edit it in strict mode will fail with a TypeError.
  * });
  */
-function defineProperties<T extends object> (v: T, props: { [key: string]: any, }) {
+function defineProperties<T extends object> (v: T, props: { [key: string]: any }) {
 	for (const prop of Reflect.ownKeys(props)) {
 		if (typeof prop !== "string") {
 			continue;
@@ -304,6 +305,7 @@ function defineProperties<T extends object> (v: T, props: { [key: string]: any, 
  *
  * @param v The object to check.
  * @param cls The constructor of the class to check.
+ * @return Whether or not the object `v` is an instance of the given class `cls`.
  */
 function isInstanceOf<T extends object, TBase extends Ctor> (v: T, cls: TBase): boolean {
 	if (v instanceof cls) {
