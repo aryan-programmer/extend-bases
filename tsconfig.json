@@ -1,0 +1,32 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"sourceMap": true,
+		"declaration": true,
+		"downlevelIteration": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"strictNullChecks": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"module": "CommonJS",
+		"moduleResolution": "node",
+		"importHelpers": true,
+		"target": "es6",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"lib": [
+			"esnext",
+			"esnext.array",
+			"es2019",
+			"dom"
+		],
+		"esModuleInterop": true
+	},
+	"exclude": [
+		"./node_modules/*",
+		"./test/*"
+	]
+}
