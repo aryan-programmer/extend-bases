@@ -1,5 +1,5 @@
 import { basename, extname } from 'path';
-import { bases, isInstanceOf } from '../index';
+import { bases, isInstanceOf, SymbolBases } from '../index';
 
 test(`first one class`, () =>
 {
@@ -17,7 +17,7 @@ test(`first one class`, () =>
 
 		getC()
 		{
-			return this.bases[0].name + "@D";
+			return this[SymbolBases][0].name + "@D";
 		}
 	}
 

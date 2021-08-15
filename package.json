@@ -20,7 +20,9 @@
     "tslint": "^6.1.3"
   },
   "scripts": {
-    "test": "yarn jest"
+    "test": "yarn jest",
+    "lint": "yarn tslint index.ts",
+    "lint:fix": "yarn tslint index.ts --fix"
   },
   "keywords": [
     "ts",

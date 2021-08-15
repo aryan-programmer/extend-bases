@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isInstanceOf = exports.defineProperties = exports.bases = void 0;
+exports.SymbolBases = exports.isInstanceOf = exports.defineProperties = exports.bases = void 0;
 const tslib_1 = require("tslib");
 // @ts-ignore
 const flatMap = (0, tslib_1.__importStar)(require("array.prototype.flatmap"));
@@ -17,6 +17,7 @@ function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
 }
 const SymbolBases = Symbol.for('extend-bases#bases');
+exports.SymbolBases = SymbolBases;
 function extendStatics(derived, base) {
     for (const p of Reflect.ownKeys(base)) {
         if (p === "length" || p === "prototype" || p === "name") {
@@ -35,14 +36,14 @@ function setPrototypeToProxy(self, baseClasses) {
         extendStatics(self, baseClasses[i]);
         for (const nextKey of Reflect.ownKeys(basePrototype)) {
             // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(basePrototype, nextKey)) {
+            if (nextKey !== SymbolBases && Object.prototype.hasOwnProperty.call(basePrototype, nextKey)) {
                 const val = basePrototype[nextKey];
                 // Only transfer functions
                 if (nextKey !== "constructor" && typeof val === "function") {
                     // Make sure that the function is only called on the specific base.
                     // @ts-ignore
                     proto[nextKey] = function (...args) {
-                        return val.apply(this.bases[i], args);
+                        return val.apply(this[SymbolBases][i], args);
                     };
                 }
             }
@@ -58,14 +59,14 @@ function setPrototypeToProxy(self, baseClasses) {
  *
  * This function isolates the method calls on the bases, so if any of the 2 bases share a property or method with the same name then, they will not affect each other.
  *
- * When you access a property or method directly on `this` and not on `this.bases`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one given.
+ * When you access a property or method directly on `this` and not on `this[SymbolBases]`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one given.
  *
  * The returned class must be initialized with the <i><b>instances</b></i> of each of the respective base classes
  *
  * Note: There is a caveat in setting properties, if you directly set a property in the constructor and the super class has the same property name then it will be overwritten, and the super class will refer to the same property, and things may break.
  * This is not due to this library, this is due to the inherent dynamic nature of JavaScript.
  * But, this library isolates the derived and base classes, ie prevents collision of their properties and methods.
- * Thus, this problem can be avoided by using the <code>defineProperties</code> method from this library, if you use the <code>bases</code> methods as well.
+ * Thus, this problem can be avoided by using the <code>defineProperties</code> method from this library, if you use the <code>[SymbolBases]</code> methods as well.
  * @param baseClasses The base classes to be inherited.
  * @return A constructor taking in the *instances* of the base classes.
  *
@@ -117,8 +118,8 @@ function setPrototypeToProxy(self, baseClasses) {
  *     }
  *
  *     getBoth () {
- *         // To get a specific base use `this.base[index]` where index is the index of the base as given in the bases function.
- *         return `Gotten: ${this.bases[0].get()} ${this.bases[1].get()}`
+ *         // To get a specific base use `this[SymbolBases][index]` where index is the index of the base as given in the bases function.
+ *         return `Gotten: ${this[SymbolBases][0].get()} ${this[SymbolBases][1].get()}`
  *     }
  * }
  *
@@ -127,32 +128,36 @@ function setPrototypeToProxy(self, baseClasses) {
  * console.log(n.get()); // true: The base given first is given preference, of course.
  * n.add(10);
  * n.deactivate();
- * console.log(n.val, n.bases[1].val); // false 10: The bases are isolated, one can't affect the other, not directly that is.
+ * console.log(n.val, n[SymbolBases][1].val); // false 10: The [SymbolBases] are isolated, one can't affect the other, not directly that is.
  */
 function bases(...baseClasses) {
     class Self2 extends (0, class_without_call_parent_constructor_1.classWithoutCallParentConstructor)(baseClasses[0]) {
         constructor(...baseInstances) {
             super();
+            /*
             Reflect.defineProperty(this, 'bases', {
                 configurable: false,
                 enumerable: false,
                 value: baseInstances,
                 writable: false,
             });
-            const _bases = baseInstances;
+             */
+            Reflect.defineProperty(this, SymbolBases, {
+                configurable: false,
+                enumerable: false,
+                value: baseInstances,
+                writable: false,
+            });
             return new Proxy(this, {
                 isExtensible(target) {
-                    return Reflect.isExtensible(target) && _bases.every(Reflect.isExtensible);
+                    return Reflect.isExtensible(target) && target[SymbolBases].every(Reflect.isExtensible);
                 },
                 preventExtensions(target) {
-                    return Reflect.preventExtensions(target) && _bases.every(Reflect.preventExtensions);
+                    return Reflect.preventExtensions(target) && target[SymbolBases].every(Reflect.preventExtensions);
                 },
                 getOwnPropertyDescriptor(target, p) {
-                    console.dir(target);
-                    // @ts-ignore
-                    console.dir(target.prototype);
                     let pd = Reflect.getOwnPropertyDescriptor(target, p);
-                    for (const base of _bases) {
+                    for (const base of target[SymbolBases]) {
                         if (pd != null) {
                             break;
                         }
@@ -161,14 +166,14 @@ function bases(...baseClasses) {
                     return pd;
                 },
                 has(target, p) {
-                    return Reflect.has(target, p) || _bases.some(base => Reflect.has(base, p));
+                    return Reflect.has(target, p) || target[SymbolBases].some(base => Reflect.has(base, p));
                 },
                 get(target, p) {
                     if (p in target) {
                         // @ts-ignore
                         return target[p];
                     }
-                    for (const base of _bases) {
+                    for (const base of target[SymbolBases]) {
                         if (p in base) {
                             // @ts-ignore
                             return base[p];
@@ -183,7 +188,7 @@ function bases(...baseClasses) {
                         target[p] = value;
                         return true;
                     }
-                    for (const base of _bases) {
+                    for (const base of target[SymbolBases]) {
                         if (p in base) {
                             // @ts-ignore
                             base[p] = value;
@@ -198,7 +203,7 @@ function bases(...baseClasses) {
                     if (p in target) {
                         return Reflect.deleteProperty(target, p);
                     }
-                    for (const base of _bases) {
+                    for (const base of target[SymbolBases]) {
                         if (p in base) {
                             return Reflect.deleteProperty(base, p);
                         }
@@ -206,11 +211,11 @@ function bases(...baseClasses) {
                     return Reflect.deleteProperty(target, p);
                 },
                 enumerate(target) {
-                    return Reflect.ownKeys(target).concat(_bases.flatMap(Reflect.ownKeys)).filter(onlyUnique);
+                    return Reflect.ownKeys(target).concat(target[SymbolBases].flatMap(Reflect.ownKeys)).filter(onlyUnique);
                 },
                 // @ts-ignore
                 ownKeys(target) {
-                    return Reflect.ownKeys(target).concat(_bases.flatMap(Reflect.ownKeys)).filter(onlyUnique);
+                    return Reflect.ownKeys(target).concat(target[SymbolBases].flatMap(Reflect.ownKeys)).filter(onlyUnique);
                 },
                 // If you want to define a property then you certainly don't want it to be on the base class.
                 defineProperty(target, p, attributes) {
@@ -272,9 +277,9 @@ function isInstanceOf(v, cls) {
         return true;
     }
     // @ts-ignore
-    if ('bases' in v && Array.isArray(v.bases)) {
+    if (SymbolBases in v && Array.isArray(v[SymbolBases])) {
         // @ts-ignore
-        for (const base of v.bases) {
+        for (const base of v[SymbolBases]) {
             if (isInstanceOf(base, cls)) {
                 return true;
             }

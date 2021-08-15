@@ -22,7 +22,6 @@ declare const SymbolBases: unique symbol;
  * Specifies that the object has an array containing instances of all of the bases.
  */
 declare type HasBasesArray<TBases extends Ctor[]> = {
-    readonly bases: InstancesArray<TBases>;
     readonly [SymbolBases]: InstancesArray<TBases>;
 };
 /**
@@ -34,14 +33,14 @@ declare type HasBases<TBases extends Ctor[]> = UnionToIntersection<AnyInstancesO
  *
  * This function isolates the method calls on the bases, so if any of the 2 bases share a property or method with the same name then, they will not affect each other.
  *
- * When you access a property or method directly on `this` and not on `this.bases`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one given.
+ * When you access a property or method directly on `this` and not on `this[SymbolBases]`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one given.
  *
  * The returned class must be initialized with the <i><b>instances</b></i> of each of the respective base classes
  *
  * Note: There is a caveat in setting properties, if you directly set a property in the constructor and the super class has the same property name then it will be overwritten, and the super class will refer to the same property, and things may break.
  * This is not due to this library, this is due to the inherent dynamic nature of JavaScript.
  * But, this library isolates the derived and base classes, ie prevents collision of their properties and methods.
- * Thus, this problem can be avoided by using the <code>defineProperties</code> method from this library, if you use the <code>bases</code> methods as well.
+ * Thus, this problem can be avoided by using the <code>defineProperties</code> method from this library, if you use the <code>[SymbolBases]</code> methods as well.
  * @param baseClasses The base classes to be inherited.
  * @return A constructor taking in the *instances* of the base classes.
  *
@@ -93,8 +92,8 @@ declare type HasBases<TBases extends Ctor[]> = UnionToIntersection<AnyInstancesO
  *     }
  *
  *     getBoth () {
- *         // To get a specific base use `this.base[index]` where index is the index of the base as given in the bases function.
- *         return `Gotten: ${this.bases[0].get()} ${this.bases[1].get()}`
+ *         // To get a specific base use `this[SymbolBases][index]` where index is the index of the base as given in the bases function.
+ *         return `Gotten: ${this[SymbolBases][0].get()} ${this[SymbolBases][1].get()}`
  *     }
  * }
  *
@@ -103,7 +102,7 @@ declare type HasBases<TBases extends Ctor[]> = UnionToIntersection<AnyInstancesO
  * console.log(n.get()); // true: The base given first is given preference, of course.
  * n.add(10);
  * n.deactivate();
- * console.log(n.val, n.bases[1].val); // false 10: The bases are isolated, one can't affect the other, not directly that is.
+ * console.log(n.val, n[SymbolBases][1].val); // false 10: The [SymbolBases] are isolated, one can't affect the other, not directly that is.
  */
 declare function bases<TBases extends Ctor[]>(...baseClasses: TBases): new (...baseInstances: InstancesArray<TBases>) => HasBases<TBases>;
 /**
@@ -134,4 +133,4 @@ declare function defineProperties<T extends object>(v: T, props: {
  * @return Whether or not the object `v` is an instance of the given class `cls`.
  */
 declare function isInstanceOf<T extends object, TBase extends Ctor>(v: T, cls: TBase): boolean;
-export { Ctor, InstancesArray, HasBasesArray, HasBases, bases, defineProperties, isInstanceOf };
+export { Ctor, InstancesArray, HasBasesArray, HasBases, bases, defineProperties, isInstanceOf, SymbolBases };
