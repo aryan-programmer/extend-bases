@@ -7,16 +7,17 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "array.prototype.flatmap": "^1.2.3",
-    "reflect.ownkeys": "^1.0.1",
-    "tslib": "^1.11.1"
+    "array.prototype.flatmap": "^1.2.4",
+    "class-without-call-parent-constructor": "^2.0.4",
+    "reflect.ownkeys": "^1.0.2",
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "jest": "^25.2.7",
-    "ts-jest": "^25.3.1",
-    "tslint": "^6.1.1",
-    "typescript": "^3.8.3"
+    "@bluelovers/tsconfig": "^1.0.25",
+    "@types/jest": "^27.0.1",
+    "jest": "^27.0.6",
+    "ts-jest": "^27.0.4",
+    "tslint": "^6.1.3"
   },
   "scripts": {
     "test": "yarn jest"

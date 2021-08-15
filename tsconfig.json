@@ -1,6 +1,8 @@
 {
+	"extends": "@bluelovers/tsconfig/esm/mapfile.json",
 	"compileOnSave": true,
 	"compilerOptions": {
+		"noImplicitOverride": false,
 		"sourceMap": true,
 		"declaration": true,
 		"downlevelIteration": true,
@@ -13,10 +15,7 @@
 		"module": "CommonJS",
 		"moduleResolution": "node",
 		"importHelpers": true,
-		"target": "es6",
-		"typeRoots": [
-			"node_modules/@types"
-		],
+		"target": "es2019",
 		"lib": [
 			"esnext",
 			"esnext.array",
