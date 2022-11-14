@@ -99,7 +99,7 @@ function setPrototypeToProxy<TBases extends Ctor[]> (
  *
  * This function isolates the method calls on the bases, so if any of the 2 bases share a property or method with the same name then, they will not affect each other.
  *
- * When you access a property or method directly on `this` and not on `this.bases`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one given.
+ * When you access a property or method directly on `this` and not on `this.bases`, and it doesn't exist on the `this` instance, then the first base class with the method/property will be the one given precedence and its method/property will be the one executed.
  *
  * The returned class must be initialized with the <i><b>instances</b></i> of each of the respective base classes
  *
@@ -244,14 +244,11 @@ function bases<TBases extends Ctor[]> (...baseClasses: TBases):
 				}
 				return Reflect.deleteProperty(target, p);
 			},
-			enumerate (target: Self): PropertyKey[] {
-				return Reflect.ownKeys(target).concat(baseInstances.flatMap(Reflect.ownKeys)).filter(onlyUnique);
-			},
-			ownKeys (target: Self): PropertyKey[] {
+			ownKeys (target: Self): (string | symbol)[] {
 				return Reflect.ownKeys(target).concat(baseInstances.flatMap(Reflect.ownKeys)).filter(onlyUnique);
 			},
 			// If you want to define a property then you certainly don't want it to be on the base class.
-			defineProperty (target: Self, p: string | number | symbol, attributes: PropertyDescriptor): boolean {
+			defineProperty (target: Self, p: PropertyKey, attributes: PropertyDescriptor): boolean {
 				return Reflect.defineProperty(target, p, attributes);
 			}
 		});
